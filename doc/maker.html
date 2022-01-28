@@ -1,0 +1,180 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>仮面ナンダーメーカー</title>
+<link rel="icon" href="./favi.svg" type="image/svg+xml">
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# website: http://ogp.me/ns/website#">
+<meta property="og:url" content="https://pexr.net/fonts/maker.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://pexr.net/fonts/maker.png">
+<meta property="og:title" content="仮面ナンダーメーカー">
+<meta name="twitter:site" content="@black_tree">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary">
+<meta name="description" content="仮面ナンダーメーカー">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<style>
+*{
+	list-style:none;
+	box-sizing:border-box;
+}
+html{
+	font-family: 'Noto Sans JP', sans-serif;
+}
+body{
+	background:#000;
+	color:#fff;
+}
+#myCanvas{
+	font-family:'k_hongo';
+	color:#f00;
+	font-size:100px;
+	letter-spacing:-8px;
+	padding:16px;
+	margin:8px auto;
+}
+a{
+	color:#fff;
+}
+header h1{text-align:center;}
+main{
+	width:1024px;
+	margin:16px auto;
+}
+@media (max-width: 1023px) {
+	main{
+		width:100%;
+	}
+}
+
+main p{
+	text-align:center;
+}
+footer{
+	text-align:center;
+}
+</style>
+</head>
+<body onload="loadedPage()">
+<header>
+	<h1>仮面ナンダーメーカー</h1>
+</header>
+<main>
+<form onsubmit="return false;">
+<p style="text-align:left;">「カタカナ」と「仮面」「ー(ハイフン)」という文字のみ使えます</p>
+	<select name="font_type" onchange="changeFont()">
+		<option value="KHONGO">本郷フォント</option>
+		<option value="KKOTARO">光太郎フォント</option>
+	</select>
+<input type="text" value="サンプルー" name="base" onchange="inputText()">
+</form>
+<canvas id="myCanvas" width="100" height="100"></canvas>
+<p><button type="button" onclick="download()">画像としてDLする</button></p>
+<a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</main>
+<footer>
+KHONGO / KKOTARO それぞれのfontの権利は作者であるkurokkyに属します。<br>
+あくまで「っぽく」作ったのでくれぐれも公式の迷惑にならないようにお使いください。<br>
+制作秘話は<a href="https://note.com/kurokky/n/n91931fe5f382">こちら</a>から。
+</footer>
+<script>
+const form = document.forms[0]
+const fonts = ['KHONGO','KKOTARO']
+function download() {
+	canvasDownload("#myCanvas");
+}
+
+function loadedPage(){
+		const params = (new URL(window.location.href)).searchParams
+		let font = 'KHONGO'
+		if (params.get('font')){
+			font = params.get('font')
+		}
+		let select_id = fonts.indexOf(font)
+		if (select_id == -1){
+			font = 'KHONGO'
+			select_id = 0
+		}
+		form.font_type.options[select_id].selected = true
+		if (params.get('text')){
+			form.base.value = params.get('text')
+		}
+		inputText(font)
+}
+function changeHistory(){
+	let font = form.font_type.value
+	const base_url = window.location.href.replace(/\?.+/g,"")
+	let url = `${base_url}?font=${font}`
+	if (form.base.value != ""){
+		url = `${base_url}?font=${font}&text=${form.base.value}`
+	}
+	history.pushState('', '変身ロゴメーカー', encodeURI(url))
+}
+
+function changeFont(){
+	let font = form.font_type.value
+	changeHistory()
+	inputText(font)
+}
+function inputText(font = false){
+	if (!font){
+		font = form.font_type.value
+	}
+	changeHistory()
+	let fontFace = new FontFace(font, `url('./fonts/${font}.woff2') format('woff2')`)
+	fontFace.load().then(function(loadedFont){
+		document.fonts.add(loadedFont)
+		let text = form.base.value
+		let canvas = document.getElementById('myCanvas')
+		canvas.width = text.length*80
+		canvas.height = 100
+		let ctx = canvas.getContext('2d')
+		ctx.textBaseline = "middle"
+		ctx.textAlign = "center"
+		ctx.clearRect(0, 0, document.width, 100)
+		ctx.fillStyle = 'rgba(255, 0, 0)'
+		ctx.font = `100px '${font}'`
+		ctx.fillText(text, text.length*80/2, 60)
+	}).catch(function(e){
+		alert("ごめんなさい、なんかエラーです。")
+	})
+
+}
+
+
+function getFormatDate(){
+  const time = new Date();
+  const str  =  ("0" + time.getHours()).slice(-2)   + ':' + ("0" + time.getMinutes()).slice(-2) + ':' + ("0" + time.getSeconds()).slice(-2) + '.' + ("00" + time.getMilliseconds()).slice(-3);
+  return(str);
+}
+
+function canvasDownload(id, type="image/png", filename="canvas"){
+  const blob    = getBlobFromCanvas(id, type)
+  const dataURI = window.URL.createObjectURL(blob)
+  const event = document.createEvent("MouseEvents")
+  event.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+  const a = document.createElementNS("http://www.w3.org/1999/xhtml", "a")
+  a.href = dataURI
+  a.download = filename
+  a.dispatchEvent(event)
+}
+
+function getBlobFromCanvas(id, type="image/png"){
+  const canvas = document.querySelector(id)
+  const base64 = canvas.toDataURL(type)
+  const tmp  = base64.split(",")
+  const data = atob(tmp[1])
+  const mime = tmp[0].split(":")[1].split(";")[0]
+  let buff = new Uint8Array(data.length)
+  for (let i = 0; i < data.length; i++) {
+    buff[i] = data.charCodeAt(i);
+  }
+  return(
+    new Blob([buff], { type: mime })
+  )
+}
+
+</script>
+</body>
+</html>
